@@ -1,8 +1,6 @@
-<<<<<<< HEAD
 node_modules/
 dist/
 .env
-=======
 # Dependencies
 node_modules/
 
@@ -74,4 +72,3 @@ reports/
 
 # Cloudinary config backups
 cloudinary.json
->>>>>>> e5677fe96831d4f78e7bf5e3699a30105cb4e0bd

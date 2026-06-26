@@ -10,6 +10,7 @@ import profileRoutes from "./routes/profileRoutes.js";
 import matchRoutes from "./routes/matchRoutes.js";
 import pgRoutes from "./routes/pgRoutes.js";
 import bookingRoutes from "./routes/bookingRoutes.js";
+import messageRoutes from "./routes/messageRoutes.js";
 
 import initializeSocket from "./socket/socket.js";
 
@@ -27,7 +28,10 @@ initializeSocket(server);
 
 
 
-app.use(cors());
+app.use(cors({
+  origin: process.env.FRONTEND_URL || "*",
+  credentials: true
+}));
 
 app.use(express.json());
 
@@ -71,6 +75,23 @@ app.use(
   "/api/bookings",
   bookingRoutes
 );
+
+import path from "path";
+import { fileURLToPath } from "url";
+
+const __dirname = path.dirname(fileURLToPath(import.meta.url));
+
+app.use(
+  "/api/messages",
+  messageRoutes
+);
+
+if (process.env.NODE_ENV === "production") {
+  app.use(express.static(path.join(__dirname, "../frontend/dist")));
+  app.get("*", (req, res) => {
+    res.sendFile(path.resolve(__dirname, "../frontend/dist", "index.html"));
+  });
+}
 
 
 

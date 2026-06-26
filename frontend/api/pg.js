@@ -35,3 +35,9 @@ export const updateRooms = async (id, available) => {
   const { data } = await apiClient.put(`/api/pg/rooms/${id}`, { available });
   return normalizePg(data);
 };
+
+export const getPGsByOwner = async (userId) => {
+  const { data } = await apiClient.get(`/api/pg/owner/${userId}`);
+  return data.map(normalizePg);
+};
+

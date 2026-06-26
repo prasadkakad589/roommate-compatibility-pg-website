@@ -28,6 +28,15 @@ export const getPG=async(req,res)=>{
         res.status(500).json({message:err.message});
     }
 }
+export const getPGsByOwner = async (req, res) => {
+    try {
+        const pgs = await Pg.find({ owner: req.params.userId }).populate("owner", "name email");
+        res.json(pgs);
+    } catch (err) {
+        res.status(500).json({ message: err.message });
+    }
+};
+
 export const updateRooms=async(req,res)=>{
     try {
         const availableVal = req.body.available !== undefined ? req.body.available : req.body.availableRooms;

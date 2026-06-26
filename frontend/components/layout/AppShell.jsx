@@ -1,6 +1,7 @@
 import { Home, LogOut, Menu, MessageCircle, MessagesSquare, UserRound, UsersRound, X } from "lucide-react";
-import { useState } from "react";
-import { NavLink, Outlet, useNavigate } from "react-router-dom";
+import { useEffect, useState } from "react";
+import { NavLink, Outlet, useLocation, useNavigate } from "react-router-dom";
+import { disconnectSocket, getSocket } from "../../api/socket.js";
 import { useAuth } from "../../auth/AuthProvider.jsx";
 import { Button } from "../ui/Button.jsx";
 
@@ -16,11 +17,49 @@ export const AppShell = () => {
   const [open, setOpen] = useState(false);
   const { signOut, user } = useAuth();
   const navigate = useNavigate();
+  const location = useLocation();
 
   const logout = () => {
     signOut();
+    disconnectSocket();
     navigate("/login", { replace: true });
   };
+
+  // Global socket connection and notifications
+  useEffect(() => {
+    if (!user) return;
+    const userId = user.id || user._id;
+    if (!userId) return;
+
+    // Request notification permission if not asked yet
+    if ("Notification" in window && Notification.permission === "default") {
+      Notification.requestPermission();
+    }
+
+    const socket = getSocket();
+    if (!socket.connected) {
+      socket.connect();
+    }
+    socket.emit("register", userId);
+
+    const onMessage = (message) => {
+      // Don't show desktop notification if they are actively looking at the chat page
+      if (location.pathname !== "/chat") {
+        if ("Notification" in window && Notification.permission === "granted") {
+          new Notification("New Message", {
+            body: message.msg || message.text || "You received a new message.",
+            icon: "/favicon.ico", // Optional, if they have one
+          });
+        }
+      }
+    };
+
+    socket.on("receiveMessage", onMessage);
+
+    return () => {
+      socket.off("receiveMessage", onMessage);
+    };
+  }, [user, location.pathname]);
 
   return (
     <div className="min-h-screen bg-surface">
@@ -102,3 +141,4 @@ export const AppShell = () => {
     </div>
   );
 };
+
